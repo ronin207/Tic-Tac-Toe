@@ -10,7 +10,7 @@ import SwiftUI
 struct ContentView: View {
     
     @State private var moves: [Move?] = Array(repeating: nil, count: 9)
-    @State private var isHumansTurn = true
+    @State private var isGameboardDisabled: Bool = false
     
     let columns: [GridItem] = [
         GridItem(.flexible()),
@@ -41,13 +41,21 @@ struct ContentView: View {
                         }
                         .onTapGesture {
                             if isSquareOccupied(in: moves, forIndex: i) { return }
-                            moves[i] = Move(player: isHumansTurn ? .human : .computer, boardIndex: i)
-                            isHumansTurn.toggle()
+                            moves[i] = Move(player: .human, boardIndex: i)
+                            isGameboardDisabled = true
+                            
+                            // Check for Win condition or Draw condition
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                                let computerPosition = determineComputerMovePosition(in: moves)
+                                moves[computerPosition] = Move(player: .computer, boardIndex: computerPosition)
+                                isGameboardDisabled = false
+                            }
                         }
                     }
                 }
                 Spacer()
             }
+            .disabled(isGameboardDisabled)
             .padding()
         }
     }
@@ -60,7 +68,7 @@ struct ContentView: View {
         var movePosition = Int.random(in: 0 ..< 9)
         
         while isSquareOccupied(in: moves, forIndex: movePosition) {
-            var movePosition = Int.random(in: 0 ..< 9)
+            movePosition = Int.random(in: 0 ..< 9)
         }
         
         return movePosition
